@@ -34,7 +34,15 @@ const SEED_PRODUCTS = [
     warehouseShelf: 'C',
     warehouseBin: 14,
     allocatedClient: 'AbuBaker Catering',
-    sellingPrice: 22.50
+    sellingPrice: 22.50,
+    sellingPriceTier1: 22.50,
+    sellingPriceTier2: 19.95,
+    sellingPriceTier3: 17.50,
+    hsCode: '5702.91.00',
+    orderDate: '2026-05-02',
+    departureDate: '2026-05-12',
+    transitEta: '2026-05-28',
+    factoryDepositPct: 30
   },
   {
     id: 'prod_2',
@@ -58,7 +66,15 @@ const SEED_PRODUCTS = [
     warehouseShelf: 'A',
     warehouseBin: 5,
     allocatedClient: 'London Hospitality Group',
-    sellingPrice: 18.00
+    sellingPrice: 18.00,
+    sellingPriceTier1: 18.00,
+    sellingPriceTier2: 16.20,
+    sellingPriceTier3: 14.50,
+    hsCode: '6914.90.00',
+    orderDate: '2026-04-28',
+    departureDate: '2026-05-06',
+    transitEta: '2026-05-25',
+    factoryDepositPct: 30
   },
   {
     id: 'prod_3',
@@ -76,12 +92,19 @@ const SEED_PRODUCTS = [
     grossWeightPerCarton: 14.5,
     shippingCostPerCarton: 50.00,
     localHandlingPerCarton: 6.00,
-    status: 'Transit',
+    status: 'Ocean Voyage',
     transitCarrier: 'Cosco Shipping',
     transitVessel: 'COSCO-AURA-9',
-    transitEta: '2026-06-20',
+    transitEta: '2026-06-25',
     allocatedClient: 'AbuBaker Catering',
-    sellingPrice: 9.50
+    sellingPrice: 9.50,
+    sellingPriceTier1: 9.50,
+    sellingPriceTier2: 8.50,
+    sellingPriceTier3: 7.20,
+    hsCode: '8513.10.00',
+    orderDate: '2026-05-18',
+    departureDate: '2026-05-28',
+    factoryDepositPct: 30
   },
   {
     id: 'prod_4',
@@ -99,12 +122,19 @@ const SEED_PRODUCTS = [
     grossWeightPerCarton: 16.8,
     shippingCostPerCarton: 32.00,
     localHandlingPerCarton: 3.50,
-    status: 'Transit',
+    status: 'Local Delivery',
     transitCarrier: 'Turkish Cargo',
     transitVessel: 'TK-FLIGHT-882',
     transitEta: '2026-06-08',
     allocatedClient: '',
-    sellingPrice: 12.00
+    sellingPrice: 12.00,
+    sellingPriceTier1: 12.00,
+    sellingPriceTier2: 10.50,
+    sellingPriceTier3: 8.95,
+    hsCode: '6302.60.00',
+    orderDate: '2026-05-20',
+    departureDate: '2026-05-30',
+    factoryDepositPct: 50
   }
 ];
 

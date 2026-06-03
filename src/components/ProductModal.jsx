@@ -36,7 +36,15 @@ export default function ProductModal({
     transitVessel: '',
     transitEta: '',
     allocatedClient: '',
-    sellingPrice: ''
+    sellingPrice: '',
+    // Advanced features fields
+    sellingPriceTier1: '',
+    sellingPriceTier2: '',
+    sellingPriceTier3: '',
+    hsCode: '',
+    orderDate: '',
+    departureDate: '',
+    factoryDepositPct: '30'
   });
 
   useEffect(() => {
@@ -62,7 +70,14 @@ export default function ProductModal({
         transitVessel: product.transitVessel || '',
         transitEta: product.transitEta || '',
         allocatedClient: product.allocatedClient || '',
-        sellingPrice: product.sellingPrice?.toString() || ''
+        sellingPrice: product.sellingPrice?.toString() || '',
+        sellingPriceTier1: product.sellingPriceTier1?.toString() || '',
+        sellingPriceTier2: product.sellingPriceTier2?.toString() || '',
+        sellingPriceTier3: product.sellingPriceTier3?.toString() || '',
+        hsCode: product.hsCode || '',
+        orderDate: product.orderDate || '',
+        departureDate: product.departureDate || '',
+        factoryDepositPct: product.factoryDepositPct?.toString() || '30'
       });
     }
   }, [product]);
@@ -115,7 +130,11 @@ export default function ProductModal({
       localHandlingPerCarton: parseFloat(formData.localHandlingPerCarton) || 0,
       warehouseAisle: parseInt(formData.warehouseAisle) || 1,
       warehouseBin: parseInt(formData.warehouseBin) || 1,
-      sellingPrice: parseFloat(formData.sellingPrice) || 0
+      sellingPrice: parseFloat(formData.sellingPrice) || 0,
+      sellingPriceTier1: parseFloat(formData.sellingPriceTier1) || 0,
+      sellingPriceTier2: parseFloat(formData.sellingPriceTier2) || 0,
+      sellingPriceTier3: parseFloat(formData.sellingPriceTier3) || 0,
+      factoryDepositPct: parseFloat(formData.factoryDepositPct) !== undefined && formData.factoryDepositPct !== '' ? parseFloat(formData.factoryDepositPct) : 30
     };
 
     onSave(processedProduct);
@@ -226,7 +245,7 @@ export default function ProductModal({
                     </div>
                   </div>
 
-                  <div className="form-grid-3" style={{ marginTop: '1rem' }}>
+                  <div className="form-grid form-grid-3" style={{ marginTop: '1rem' }}>
                     <div className="form-group">
                       <label className="form-label">Allocated Client / Buyer</label>
                       <input
@@ -251,7 +270,21 @@ export default function ProductModal({
                       />
                     </div>
                     <div className="form-group">
-                      <label className="form-label">Selling Price ({getSymbol(nativeCurrency)})</label>
+                      <label className="form-label">HS Customs Code</label>
+                      <input
+                        type="text"
+                        name="hsCode"
+                        className="form-control"
+                        placeholder="e.g. 3924.10.00"
+                        value={formData.hsCode}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-grid form-grid-4" style={{ marginTop: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Default Price ({getSymbol(nativeCurrency)})</label>
                       <input
                         type="number"
                         name="sellingPrice"
@@ -259,6 +292,42 @@ export default function ProductModal({
                         className="form-control"
                         placeholder="e.g. 15.00"
                         value={formData.sellingPrice}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Tier 1: Standard ({getSymbol(nativeCurrency)})</label>
+                      <input
+                        type="number"
+                        name="sellingPriceTier1"
+                        step="0.01"
+                        className="form-control"
+                        placeholder="Auto calculated"
+                        value={formData.sellingPriceTier1}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Tier 2: Bulk Trade ({getSymbol(nativeCurrency)})</label>
+                      <input
+                        type="number"
+                        name="sellingPriceTier2"
+                        step="0.01"
+                        className="form-control"
+                        placeholder="Auto calculated"
+                        value={formData.sellingPriceTier2}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Tier 3: Dist. ({getSymbol(nativeCurrency)})</label>
+                      <input
+                        type="number"
+                        name="sellingPriceTier3"
+                        step="0.01"
+                        className="form-control"
+                        placeholder="Auto calculated"
+                        value={formData.sellingPriceTier3}
                         onChange={handleChange}
                       />
                     </div>
@@ -351,7 +420,7 @@ export default function ProductModal({
                     <Calculator size={16} />
                     <span>Landed Cost Apportionment (Native Currency)</span>
                   </div>
-                  <div className="form-grid-2" style={{ marginTop: '0.75rem' }}>
+                  <div className="form-grid form-grid-2" style={{ marginTop: '0.75rem' }}>
                     <div className="form-group">
                       <label className="form-label">Freight / Carton ({getSymbol(nativeCurrency)})</label>
                       <input
@@ -387,7 +456,7 @@ export default function ProductModal({
                   </div>
                   <div className="form-grid form-grid-2" style={{ marginTop: '0.75rem' }}>
                     <div className="form-group">
-                      <label className="form-label">Status</label>
+                      <label className="form-label">Status Stage</label>
                       <select
                         name="status"
                         className="select-filter"
@@ -395,13 +464,66 @@ export default function ProductModal({
                         onChange={handleChange}
                         style={{ height: '38px' }}
                       >
-                        <option value="Warehouse">In Warehouse</option>
-                        <option value="Transit">In Transit</option>
+                        <option value="Production">1. Production (Factory)</option>
+                        <option value="Port Origin">2. Port Origin (Staged)</option>
+                        <option value="Ocean Voyage">3. Ocean Voyage (Transit)</option>
+                        <option value="Customs Clearance">4. Customs Clearance</option>
+                        <option value="Local Delivery">5. Local Delivery</option>
+                        <option value="Warehouse">6. In Warehouse</option>
                       </select>
                     </div>
 
+                    <div className="form-group">
+                      <label className="form-label">Factory Deposit %</label>
+                      <input
+                        type="number"
+                        name="factoryDepositPct"
+                        className="form-control"
+                        placeholder="e.g. 30"
+                        min="0"
+                        max="100"
+                        value={formData.factoryDepositPct}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-grid form-grid-3" style={{ marginTop: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Order Date</label>
+                      <input
+                        type="date"
+                        name="orderDate"
+                        className="form-control"
+                        value={formData.orderDate}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Departure Date</label>
+                      <input
+                        type="date"
+                        name="departureDate"
+                        className="form-control"
+                        value={formData.departureDate}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">ETA Date (Port Arrival)</label>
+                      <input
+                        type="date"
+                        name="transitEta"
+                        className="form-control"
+                        value={formData.transitEta}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: '1rem' }}>
                     {formData.status === 'Warehouse' ? (
-                      <div className="form-grid-4">
+                      <div className="form-grid form-grid-4">
                         <div className="form-group">
                           <label className="form-label">Zone</label>
                           <select name="warehouseZone" className="select-filter" value={formData.warehouseZone} onChange={handleChange} style={{ height: '38px', padding: '0.5rem' }}>
@@ -424,18 +546,14 @@ export default function ProductModal({
                         </div>
                       </div>
                     ) : (
-                      <div className="form-grid-3">
+                      <div className="form-grid form-grid-2">
                         <div className="form-group">
-                          <label className="form-label">Carrier</label>
-                          <input type="text" name="transitCarrier" className="form-control" placeholder="e.g. Maersk" value={formData.transitCarrier} onChange={handleChange} />
+                          <label className="form-label">Shipping Carrier</label>
+                          <input type="text" name="transitCarrier" className="form-control" placeholder="e.g. Cosco / Turkish Cargo" value={formData.transitCarrier} onChange={handleChange} />
                         </div>
                         <div className="form-group">
-                          <label className="form-label">Vessel/Flight</label>
-                          <input type="text" name="transitVessel" className="form-control" placeholder="e.g. MS-92" value={formData.transitVessel} onChange={handleChange} />
-                        </div>
-                        <div className="form-group">
-                          <label className="form-label">ETA Date</label>
-                          <input type="date" name="transitEta" className="form-control" value={formData.transitEta} onChange={handleChange} />
+                          <label className="form-label">Vessel Name / Flight ID</label>
+                          <input type="text" name="transitVessel" className="form-control" placeholder="e.g. COSCO-AURA-9" value={formData.transitVessel} onChange={handleChange} />
                         </div>
                       </div>
                     )}
@@ -480,26 +598,54 @@ export default function ProductModal({
                       <span>Landed Cost (per piece):</span>
                       <span>{getSymbol(nativeCurrency)}{calculations.landedCostPerPiece.toFixed(2)}</span>
                     </div>
-                    {calculations.sellingPrice > 0 && (
-                      <>
-                        <div className="cost-breakdown-row" style={{ marginTop: '0.25rem' }}>
-                          <span>Customer Price (per piece):</span>
-                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{getSymbol(nativeCurrency)}{calculations.sellingPrice.toFixed(2)}</span>
-                        </div>
-                        <div className="cost-breakdown-row">
-                          <span>Profit per piece:</span>
-                          <span style={{ fontWeight: 700, color: calculations.profitPerPiece >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
-                            {getSymbol(nativeCurrency)}{calculations.profitPerPiece.toFixed(2)} ({calculations.marginPct.toFixed(1)}% Margin)
+                    {/* Tiered Margins */}
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem', letterSpacing: '0.5px' }}>PROFIT MARGINS BY TRADE TIER</span>
+                      
+                      <div className="cost-breakdown-row" style={{ fontSize: '0.8rem' }}>
+                        <span>Tier 1 (Standard):</span>
+                        <strong style={{ color: calculations.tier1Profit >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
+                          {getSymbol(nativeCurrency)}{calculations.sellingPriceTier1.toFixed(2)} ({calculations.tier1MarginPct.toFixed(1)}% Margin)
+                        </strong>
+                      </div>
+                      
+                      <div className="cost-breakdown-row" style={{ fontSize: '0.8rem' }}>
+                        <span>Tier 2 (Bulk Trade):</span>
+                        <strong style={{ color: calculations.tier2Profit >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
+                          {getSymbol(nativeCurrency)}{calculations.sellingPriceTier2.toFixed(2)} ({calculations.tier2MarginPct.toFixed(1)}% Margin)
+                        </strong>
+                      </div>
+                      
+                      <div className="cost-breakdown-row" style={{ fontSize: '0.8rem' }}>
+                        <span>Tier 3 (Distributor):</span>
+                        <strong style={{ color: calculations.tier3Profit >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
+                          {getSymbol(nativeCurrency)}{calculations.sellingPriceTier3.toFixed(2)} ({calculations.tier3MarginPct.toFixed(1)}% Margin)
+                        </strong>
+                      </div>
+                    </div>
+
+                    {/* Capital Lockup Timeline */}
+                    <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', marginTop: '0.5rem', paddingTop: '0.5rem' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: '0.35rem', letterSpacing: '0.5px' }}>CAPITAL LOCKUP SCHEDULE</span>
+                      {calculations.cashFlowSchedule.map(cf => (
+                        <div key={cf.id} className="cost-breakdown-row" style={{ fontSize: '0.75rem', padding: '0.15rem 0' }}>
+                          <span>{cf.description} ({cf.date}):</span>
+                          <span style={{ display: 'inline-flex', gap: '0.35rem', alignItems: 'center' }}>
+                            <strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                              {getSymbol(nativeCurrency)}{cf.amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            </strong>
+                            <span className="badge" style={{
+                              fontSize: '0.6rem',
+                              padding: '0.05rem 0.25rem',
+                              background: cf.status === 'Paid' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(245, 158, 11, 0.12)',
+                              color: cf.status === 'Paid' ? 'var(--accent-emerald)' : 'var(--accent-amber)',
+                              border: cf.status === 'Paid' ? '1px solid rgba(16, 185, 129, 0.2)' : '1px solid rgba(245, 158, 11, 0.2)'
+                            }}>{cf.status}</span>
                           </span>
                         </div>
-                        <div className="cost-breakdown-row">
-                          <span>Projected Order Profit:</span>
-                          <span style={{ fontWeight: 700, color: calculations.totalProfit >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
-                            {getSymbol(nativeCurrency)}{calculations.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                          </span>
-                        </div>
-                      </>
-                    )}
+                      ))}
+                    </div>
+
                     <div className="cost-breakdown-row" style={{ fontStyle: 'italic', fontSize: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '0.25rem' }}>
                       <span>Total landed value of order:</span>
                       <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>

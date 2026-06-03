@@ -1,5 +1,6 @@
 import React from 'react';
-import { DollarSign, Percent, Package, Scale, TrendingUp, Compass } from 'lucide-react';
+import { DollarSign, Percent, Package, Scale, TrendingUp, Compass, Calendar, Clock, Truck } from 'lucide-react';
+import { calculateLandedCost } from '../utils/costCalculator';
 
 export default function DashboardStats({
   products,
@@ -27,6 +28,7 @@ export default function DashboardStats({
   let totalCartons = 0;
   let totalWeight = 0;
   let totalCbm = 0;
+  let totalCbmActive = 0; // CBM for items in transit/production (not Warehouse)
   
   let chinaCount = 0;
   let turkeyCount = 0;
@@ -41,77 +43,81 @@ export default function DashboardStats({
   let totalRevenue = 0;
   let totalProfit = 0;
 
+  // Cash flow aggregates
+  const allPayments = [];
+
   products.forEach(p => {
     const rate = exchangeRates[p.purchaseCurrency] || 1;
-    const piecesPerCarton = parseInt(p.piecesPerCarton) || 1;
-    const numCartons = parseInt(p.numCartons) || 0;
-    const itemPieces = piecesPerCarton * numCartons;
-    
-    totalPieces += itemPieces;
-    totalCartons += numCartons;
+    const calcs = calculateLandedCost(p, rate);
 
-    // Converted native price
-    const foreignPrice = parseFloat(p.foreignPrice) || 0;
-    const nativePrice = rate > 0 ? foreignPrice / rate : 0;
-    const itemPurchaseCost = nativePrice * itemPieces;
-    totalPurchaseCost += itemPurchaseCost;
+    totalPieces += calcs.totalPieces;
+    totalCartons += calcs.numCartons || p.numCartons || 0;
+    totalPurchaseCost += calcs.totalNativePrice;
+    totalDutyCost += calcs.totalDutyCost;
+    totalShippingCost += calcs.totalShippingCost;
+    totalHandlingCost += calcs.totalLocalHandling;
+    totalLandedValue += calcs.totalLandedCost;
 
-    // Duty
-    const dutyRatePct = parseFloat(p.dutyRatePct) || 0;
-    const itemDutyCost = itemPurchaseCost * (dutyRatePct / 100);
-    totalDutyCost += itemDutyCost;
-
-    // Shipping & handling
-    const shippingPerCarton = parseFloat(p.shippingCostPerCarton) || 0;
-    const itemShippingCost = shippingPerCarton * numCartons;
-    totalShippingCost += itemShippingCost;
-
-    const handlingPerCarton = parseFloat(p.localHandlingPerCarton) || 0;
-    const itemHandlingCost = handlingPerCarton * numCartons;
-    totalHandlingCost += itemHandlingCost;
-
-    // Total Landed for this item
-    const itemLandedCost = itemPurchaseCost + itemDutyCost + itemShippingCost + itemHandlingCost;
-    totalLandedValue += itemLandedCost;
-
-    // Selling & profit calculations
-    const sellingPrice = parseFloat(p.sellingPrice) || 0;
-    const itemRevenue = sellingPrice * itemPieces;
+    // Use Tier 1 (Standard Trade) as base for dashboard aggregates
+    const sellingPrice = calcs.sellingPriceTier1;
+    const itemRevenue = sellingPrice * calcs.totalPieces;
     totalRevenue += itemRevenue;
-
-    const itemProfit = itemRevenue > 0 ? itemRevenue - itemLandedCost : 0;
-    totalProfit += itemProfit;
+    totalProfit += calcs.tier1Profit * calcs.totalPieces;
 
     // Client allocations sum
     if (p.allocatedClient) {
-      clientValuations[p.allocatedClient] = (clientValuations[p.allocatedClient] || 0) + itemLandedCost;
+      clientValuations[p.allocatedClient] = (clientValuations[p.allocatedClient] || 0) + calcs.totalLandedCost;
     } else {
-      totalAvailableValue += itemLandedCost;
+      totalAvailableValue += calcs.totalLandedCost;
     }
 
     // Weight and CBM
-    const cartonWidth = parseFloat(p.cartonWidth) || 0;
-    const cartonHeight = parseFloat(p.cartonHeight) || 0;
-    const cartonLength = parseFloat(p.cartonLength) || 0;
-    const cbmPerCarton = (cartonWidth * cartonHeight * cartonLength) / 1000000;
-    
-    totalCbm += cbmPerCarton * numCartons;
-    totalWeight += (parseFloat(p.grossWeightPerCarton) || 0) * numCartons;
+    totalCbm += calcs.totalCbm;
+    totalWeight += calcs.totalWeight;
+
+    // Active logistics volume (not yet inside warehouse shelves)
+    if (p.status !== 'Warehouse') {
+      totalCbmActive += calcs.totalCbm;
+      transitCount++;
+    } else {
+      warehouseCount++;
+    }
 
     // Counts
-    if (p.origin === 'China') chinaCount += itemPieces;
-    if (p.origin === 'Turkey') turkeyCount += itemPieces;
-    
-    if (p.status === 'Transit') transitCount++;
-    if (p.status === 'Warehouse') warehouseCount++;
+    if (p.origin === 'China') chinaCount += calcs.totalPieces;
+    if (p.origin === 'Turkey') turkeyCount += calcs.totalPieces;
+
+    // Collect payment events
+    if (calcs.cashFlowSchedule) {
+      allPayments.push(...calcs.cashFlowSchedule);
+    }
   });
 
   const formatCurrency = (val) => {
     return getSymbol(nativeCurrency) + val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
-  // Calculate efficiency percentages
+  // Calculate averages & rates
   const avgProfitMarginPct = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
+  
+  // Container capacities
+  const cbmPercent20ft = Math.min((totalCbmActive / 33) * 100, 100);
+  const cbmPercent40ft = Math.min((totalCbmActive / 67) * 100, 100);
+  const containers20ftRequired = totalCbmActive / 33;
+
+  // Payments aggregates
+  const upcomingPayments = allPayments
+    .filter(pay => pay.status === 'Pending')
+    .sort((a, b) => new Date(a.date) - new Date(b.date))
+    .slice(0, 5); // Next 5 pending payments
+
+  const paidSum = allPayments
+    .filter(pay => pay.status === 'Paid')
+    .reduce((sum, pay) => sum + pay.amount, 0);
+
+  const pendingSum = allPayments
+    .filter(pay => pay.status === 'Pending')
+    .reduce((sum, pay) => sum + pay.amount, 0);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -153,7 +159,7 @@ export default function DashboardStats({
             {totalPieces.toLocaleString()} <span style={{ fontSize: '1rem', color: 'var(--text-secondary)' }}>pcs</span>
           </div>
           <div className="stats-footer">
-            <span>Across {totalCartons} cartons ({warehouseCount} in stock / {transitCount} in transit)</span>
+            <span>Across {totalCartons} cartons ({warehouseCount} in stock / {transitCount} in progress)</span>
           </div>
         </div>
 
@@ -239,6 +245,103 @@ export default function DashboardStats({
             <div style={{ borderTop: '1px dashed var(--border-light)', paddingTop: '0.5rem', marginTop: '0.25rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
               <span style={{ color: 'var(--text-muted)' }}>Unallocated Stock:</span>
               <strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{formatCurrency(totalAvailableValue)}</strong>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      {/* Advanced Import/Export Projections Section */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(450px, 1fr))', gap: '1.5rem' }}>
+        
+        {/* CONTAINER SPACE PLANNING */}
+        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', margin: 0 }}>
+            <Truck className="text-amber" size={16} />
+            <span>Container Space Optimization (Active Logistics)</span>
+          </h4>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Total Cargo Volume in Logistics:</span>
+              <strong style={{ fontSize: '1.25rem', color: 'var(--text-primary)' }}>{totalCbmActive.toFixed(2)} CBM</strong>
+            </div>
+
+            {/* 20ft Container Load Capacity */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                <span>Standard 20ft Container Load (33 CBM Capacity)</span>
+                <strong>{cbmPercent20ft.toFixed(1)}% Full</strong>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '5px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+                <div style={{ 
+                  width: `${cbmPercent20ft}%`, 
+                  height: '100%', 
+                  background: cbmPercent20ft >= 90 ? 'var(--accent-rose)' : cbmPercent20ft >= 75 ? 'var(--accent-amber)' : 'var(--accent-emerald)',
+                  transition: 'width 0.4s ease'
+                }}></div>
+              </div>
+            </div>
+
+            {/* 40ft Container Load Capacity */}
+            <div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', marginBottom: '0.25rem' }}>
+                <span>High-Cube 40ft Container Load (67 CBM Capacity)</span>
+                <strong>{cbmPercent40ft.toFixed(1)}% Full</strong>
+              </div>
+              <div style={{ width: '100%', height: '10px', background: 'rgba(255,255,255,0.03)', borderRadius: '5px', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+                <div style={{ 
+                  width: `${cbmPercent40ft}%`, 
+                  height: '100%', 
+                  background: cbmPercent40ft >= 90 ? 'var(--accent-rose)' : cbmPercent40ft >= 75 ? 'var(--accent-amber)' : 'var(--accent-emerald)',
+                  transition: 'width 0.4s ease'
+                }}></div>
+              </div>
+            </div>
+
+            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.01)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px dashed var(--border-light)' }}>
+              Total shipping volume requires approximately <strong>{containers20ftRequired.toFixed(1)} x 20ft containers</strong> or <strong>{(totalCbmActive / 67).toFixed(1)} x 40ft containers</strong>. Optimize container packing list to minimize LCL (Less than Container Load) rates.
+            </div>
+          </div>
+        </div>
+
+        {/* CASH FLOW FORECASTER */}
+        <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+          <h4 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px', color: 'var(--text-secondary)', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem', margin: 0 }}>
+            <Calendar className="text-cyan" size={16} />
+            <span>Capital Lockup & Cash Flow Calendar</span>
+          </h4>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+              <div>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Paid Outflow</span>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--text-primary)' }}>{formatCurrency(paidSum)}</div>
+              </div>
+              <div>
+                <span style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', textTransform: 'uppercase' }}>Pending Outflow</span>
+                <div style={{ fontSize: '1.1rem', fontWeight: '700', color: 'var(--accent-amber)' }}>{formatCurrency(pendingSum)}</div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <span style={{ fontSize: '0.75rem', fontWeight: '700', color: 'var(--text-secondary)', letterSpacing: '0.5px' }}>UPCOMING INVOICES & PAYMENTS:</span>
+              
+              {upcomingPayments.length === 0 ? (
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic', padding: '0.5rem 0' }}>No pending invoices scheduled.</span>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '150px', overflowY: 'auto', paddingRight: '0.25rem' }}>
+                  {upcomingPayments.map((pay, i) => (
+                    <div key={pay.id + '_' + i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', padding: '0.35rem', background: 'rgba(255,255,255,0.01)', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{pay.sku} - {pay.description}</span>
+                        <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Due: {pay.date} | Stage: {pay.stage}</span>
+                      </div>
+                      <strong style={{ color: 'var(--accent-rose)', fontFamily: 'monospace' }}>{formatCurrency(pay.amount)}</strong>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
         </div>

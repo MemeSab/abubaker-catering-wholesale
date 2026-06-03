@@ -20,23 +20,15 @@ export default function LocationVisualizer({ products }) {
       } else {
         warehouseZones[p.warehouseZone] = [p];
       }
-    } else if (p.status === 'Transit') {
+    } else {
       transitShipments.push(p);
     }
   });
 
-  // Transit progress calculation helper
-  const getTransitProgress = (etaString) => {
-    if (!etaString) return 50; // Default center node
-    const eta = new Date(etaString);
-    const now = new Date();
-    const diffTime = eta - now;
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    
-    if (diffDays <= 0) return 90; // Near destination / customs
-    if (diffDays > 30) return 20; // Just departed origin
-    if (diffDays > 14) return 45; // In mid-transit
-    return 70; // Approaching port
+  const getStageIndex = (status) => {
+    const stages = ['Production', 'Port Origin', 'Ocean Voyage', 'Customs Clearance', 'Local Delivery', 'Warehouse'];
+    const idx = stages.indexOf(status);
+    return idx >= 0 ? idx : 0;
   };
 
   return (
@@ -46,17 +38,17 @@ export default function LocationVisualizer({ products }) {
       <div className="glass-panel" style={{ padding: '1.5rem' }}>
         <h3 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '1.1rem', fontWeight: '700', marginBottom: '1.25rem', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.75rem' }}>
           <Compass className="text-amber" size={20} />
-          <span>Active Import Shipments (China & Turkey in Transit)</span>
+          <span>Active Import Shipments & Logistics Milestones</span>
         </h3>
 
         {transitShipments.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-            No active shipments currently in transit. All goods are in warehouse.
+            No active shipments currently in transit. All goods are on warehouse shelves.
           </div>
         ) : (
           <div className="transit-timeline">
             {transitShipments.map(p => {
-              const progress = getTransitProgress(p.transitEta);
+              const stageIdx = getStageIndex(p.status);
               
               return (
                 <div key={p.id} className="transit-shipment">
@@ -70,29 +62,37 @@ export default function LocationVisualizer({ products }) {
                       <span className={`badge badge-${p.origin.toLowerCase()}`} style={{ fontSize: '0.6rem', padding: '0.1rem 0.4rem' }}>
                         From {p.origin}
                       </span>
+                      <span className="badge" style={{ fontSize: '0.6rem', padding: '0.1rem 0.4rem', background: 'rgba(255,255,255,0.04)', color: 'var(--text-secondary)' }}>
+                        {p.status}
+                      </span>
                     </div>
                   </div>
 
                   {/* Middle Timeline Map */}
                   <div className="transit-route">
-                    {/* Origin node */}
-                    <div className={`route-node origin node-0 ${progress >= 0 ? 'active' : ''}`}>
-                      <div className="route-node-label">{p.origin} Port</div>
+                    {/* Factory */}
+                    <div className={`route-node origin ${stageIdx >= 0 ? 'active' : ''}`}>
+                      <div className="route-node-label">1. Factory</div>
                     </div>
 
-                    {/* Middle sea transit node */}
-                    <div className={`route-node node-1 ${progress >= 35 ? 'active' : ''}`}>
-                      <div className="route-node-label">International Waters</div>
+                    {/* Port Load */}
+                    <div className={`route-node ${stageIdx >= 1 ? 'active' : ''}`}>
+                      <div className="route-node-label">2. Port Load</div>
                     </div>
 
-                    {/* Customs port node */}
-                    <div className={`route-node node-2 ${progress >= 70 ? 'active' : ''}`}>
-                      <div className="route-node-label">Customs / Port</div>
+                    {/* Ocean Voyage */}
+                    <div className={`route-node ${stageIdx >= 2 ? 'active' : ''}`}>
+                      <div className="route-node-label">3. Voyage</div>
                     </div>
 
-                    {/* Destination node */}
-                    <div className={`route-node destination node-3 ${progress >= 90 ? 'active' : ''}`}>
-                      <div className="route-node-label">Local Warehouse</div>
+                    {/* Customs Clearance */}
+                    <div className={`route-node ${stageIdx >= 3 ? 'active' : ''}`}>
+                      <div className="route-node-label">4. Customs</div>
+                    </div>
+
+                    {/* Local Delivery */}
+                    <div className={`route-node destination ${stageIdx >= 4 ? 'active' : ''}`}>
+                      <div className="route-node-label">5. Delivery</div>
                     </div>
                   </div>
 
