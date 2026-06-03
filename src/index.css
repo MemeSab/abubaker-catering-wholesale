@@ -860,3 +860,106 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Mobile & Tablet Responsiveness */
+@media (max-width: 900px) {
+  .navbar {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+    align-items: stretch;
+    text-align: center;
+  }
+
+  .navbar-actions {
+    flex-direction: column;
+    gap: 0.75rem;
+    width: 100%;
+    align-items: stretch;
+  }
+
+  .navbar-actions > div {
+    display: flex;
+    justify-content: center;
+  }
+
+  .navbar-actions select {
+    width: 100%;
+  }
+
+  .main-content {
+    padding: 1rem;
+    gap: 1.25rem;
+  }
+
+  .stats-card {
+    padding: 1.25rem;
+  }
+
+  .stats-value {
+    font-size: 1.5rem;
+  }
+
+  .table-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .search-input-wrapper {
+    max-width: 100%;
+    min-width: 100%;
+  }
+
+  .filter-group {
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
+    gap: 0.5rem;
+  }
+
+  .filter-group select,
+  .filter-group button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .form-grid-2, .form-grid-3, .form-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+    border-radius: var(--radius-md);
+  }
+
+  .modal-body {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  /* Stack Transit timeline cards */
+  .transit-shipment {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+    padding: 1.25rem 1rem;
+  }
+
+  .transit-shipment > div:first-child,
+  .transit-shipment > div:last-child {
+    width: 100% !important;
+  }
+
+  .transit-route {
+    padding: 1.5rem 0.5rem 2rem 0.5rem;
+    min-height: 60px;
+    flex: none;
+  }
+
+  .route-node-label {
+    font-size: 0.6rem;
+    top: 20px;
+  }
+}
+
