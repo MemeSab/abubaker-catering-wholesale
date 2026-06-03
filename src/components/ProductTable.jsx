@@ -322,94 +322,101 @@ export default function ProductTable({
       
       {/* Header controls */}
       <div className="table-controls">
-        <div className="search-input-wrapper">
-          <Search className="search-icon" size={16} />
-          <input
-            type="text"
-            className="search-input"
-            placeholder="Search SKU, name, client, carrier..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        {/* Row 1: Search & Filter Dropdowns */}
+        <div className="controls-row row-main">
+          <div className="search-input-wrapper">
+            <Search className="search-icon" size={16} />
+            <input
+              type="text"
+              className="search-input"
+              placeholder="Search SKU, name, client, carrier..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          <div className="filter-dropdowns">
+            {/* Origin filter */}
+            <select
+              className="select-filter"
+              value={originFilter}
+              onChange={(e) => setOriginFilter(e.target.value)}
+            >
+              <option value="All">All Origins</option>
+              <option value="China">China Only</option>
+              <option value="Turkey">Turkey Only</option>
+            </select>
+
+            {/* Location status filter */}
+            <select
+              className="select-filter"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="All">All Locations</option>
+              <option value="Warehouse">In Warehouse</option>
+              <option value="Transit">In Transit</option>
+            </select>
+
+            {/* Client filter */}
+            <select
+              className="select-filter"
+              value={clientFilter}
+              onChange={(e) => setClientFilter(e.target.value)}
+            >
+              <option value="All">All Clients</option>
+              <option value="Unallocated">Unallocated (Available)</option>
+              {uniqueClients.map(c => <option key={c} value={c}>{c}</option>)}
+            </select>
+
+            {/* Pricing Tier View Selector */}
+            <select
+              className="select-filter tier-view-select"
+              value={tablePricingTier}
+              onChange={(e) => setTablePricingTier(e.target.value)}
+              title="Switch the active pricing tier displayed in the table"
+            >
+              <option value="tier1">Tier 1: Standard Trade</option>
+              <option value="tier2">Tier 2: Bulk Trade</option>
+              <option value="tier3">Tier 3: Distributor</option>
+            </select>
+          </div>
         </div>
 
-        <div className="filter-group">
-          {/* Origin filter */}
-          <select
-            className="select-filter"
-            value={originFilter}
-            onChange={(e) => setOriginFilter(e.target.value)}
-          >
-            <option value="All">All Origins</option>
-            <option value="China">China Only</option>
-            <option value="Turkey">Turkey Only</option>
-          </select>
-
-          {/* Location status filter */}
-          <select
-            className="select-filter"
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-          >
-            <option value="All">All Locations</option>
-            <option value="Warehouse">In Warehouse</option>
-            <option value="Transit">In Transit</option>
-          </select>
-
-          {/* Client filter */}
-          <select
-            className="select-filter"
-            value={clientFilter}
-            onChange={(e) => setClientFilter(e.target.value)}
-          >
-            <option value="All">All Clients</option>
-            <option value="Unallocated">Unallocated (Available)</option>
-            {uniqueClients.map(c => <option key={c} value={c}>{c}</option>)}
-          </select>
-
-          {/* Pricing Tier View Selector */}
-          <select
-            className="select-filter"
-            value={tablePricingTier}
-            onChange={(e) => setTablePricingTier(e.target.value)}
-            style={{ border: '1px solid rgba(6, 182, 212, 0.4)', background: 'rgba(6, 182, 212, 0.05)', height: '36px', padding: '0.4rem 0.5rem', borderRadius: 'var(--radius-sm)' }}
-            title="Switch the active pricing tier displayed in the table"
-          >
-            <option value="tier1">Tier 1: Standard Trade</option>
-            <option value="tier2">Tier 2: Bulk Trade</option>
-            <option value="tier3">Tier 3: Distributor</option>
-          </select>
-
-          <button className="btn btn-secondary" onClick={exportToCsv} disabled={sortedProducts.length === 0} title="Export CSV Report">
-            <FileSpreadsheet size={16} />
-            <span>Export CSV</span>
-          </button>
-
-          {/* Import file input and buttons */}
-          <input
-            type="file"
-            accept=".csv"
-            id="csv-import"
-            style={{ display: 'none' }}
-            onChange={handleImportCsv}
-          />
-          <button className="btn btn-secondary" onClick={() => document.getElementById('csv-import').click()} title="Import inventory CSV">
-            <Upload size={16} />
-            <span>Import CSV</span>
-          </button>
-
-          <a href={templateUrl} download className="btn btn-text" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }} title="Download sample import template">
-            <Download size={12} />
-            <span>Template</span>
-          </a>
-
-          {onResetToSeed && (
-            <button className="btn btn-text" onClick={onResetToSeed} style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', color: 'rgba(244, 63, 94, 0.85)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }} title="Reset database to default seed data">
-              <span>Reset Defaults</span>
+        {/* Row 2: Secondary Utilities (CSV Import/Export, Reset) & Primary CTA (Add Item) */}
+        <div className="controls-row row-actions">
+          <div className="action-utilities">
+            <button className="btn btn-secondary" onClick={exportToCsv} disabled={sortedProducts.length === 0} title="Export CSV Report">
+              <FileSpreadsheet size={16} />
+              <span>Export CSV</span>
             </button>
-          )}
 
-          <button className="btn btn-primary" onClick={onAddClick}>
+            {/* Import file input and buttons */}
+            <input
+              type="file"
+              accept=".csv"
+              id="csv-import"
+              style={{ display: 'none' }}
+              onChange={handleImportCsv}
+            />
+            <button className="btn btn-secondary" onClick={() => document.getElementById('csv-import').click()} title="Import inventory CSV">
+              <Upload size={16} />
+              <span>Import CSV</span>
+            </button>
+
+            <a href={templateUrl} download className="btn btn-text btn-template" title="Download sample import template">
+              <Download size={12} />
+              <span>Template</span>
+            </a>
+
+            {onResetToSeed && (
+              <button className="btn btn-text btn-reset" onClick={onResetToSeed} title="Reset database to default seed data">
+                <span>Reset Defaults</span>
+              </button>
+            )}
+          </div>
+
+          <button className="btn btn-primary btn-add-item" onClick={onAddClick}>
             <Plus size={16} />
             <span>Add Item</span>
           </button>
