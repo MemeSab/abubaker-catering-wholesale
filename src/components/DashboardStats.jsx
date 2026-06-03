@@ -5,7 +5,8 @@ import { calculateLandedCost } from '../utils/costCalculator';
 export default function DashboardStats({
   products,
   nativeCurrency,
-  exchangeRates
+  exchangeRates,
+  onEditProduct
 }) {
   const currencySymbols = {
     GBP: '£',
@@ -89,7 +90,7 @@ export default function DashboardStats({
 
     // Collect payment events
     if (calcs.cashFlowSchedule) {
-      allPayments.push(...calcs.cashFlowSchedule);
+      allPayments.push(...calcs.cashFlowSchedule.map(item => ({ ...item, product: p })));
     }
   });
 
@@ -332,7 +333,22 @@ export default function DashboardStats({
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', maxHeight: '150px', overflowY: 'auto', paddingRight: '0.25rem' }}>
                   {upcomingPayments.map((pay, i) => (
-                    <div key={pay.id + '_' + i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', padding: '0.35rem', background: 'rgba(255,255,255,0.01)', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.03)' }}>
+                    <div 
+                      key={pay.id + '_' + i} 
+                      onClick={() => onEditProduct && onEditProduct(pay.product)}
+                      style={{ 
+                        display: 'flex', 
+                        justifyContent: 'space-between', 
+                        alignItems: 'center', 
+                        fontSize: '0.75rem', 
+                        padding: '0.4rem 0.5rem', 
+                        background: 'rgba(255,255,255,0.01)', 
+                        borderRadius: '4px', 
+                        border: '1px solid rgba(255,255,255,0.03)',
+                        cursor: onEditProduct ? 'pointer' : 'default'
+                      }}
+                      className="calendar-event-item"
+                    >
                       <div style={{ display: 'flex', flexDirection: 'column' }}>
                         <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{pay.sku} - {pay.description}</span>
                         <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)' }}>Due: {pay.date} | Stage: {pay.stage}</span>

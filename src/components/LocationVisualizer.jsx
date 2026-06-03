@@ -1,7 +1,7 @@
 import React from 'react';
 import { Compass, Warehouse, Anchor, Box, Calendar, Truck, ArrowRight } from 'lucide-react';
 
-export default function LocationVisualizer({ products }) {
+export default function LocationVisualizer({ products, onEditProduct }) {
   // 1. Group products by warehouse zone
   const warehouseZones = {
     'Zone A': [],
@@ -51,7 +51,11 @@ export default function LocationVisualizer({ products }) {
               const stageIdx = getStageIndex(p.status);
               
               return (
-                <div key={p.id} className="transit-shipment">
+                <div 
+                  key={p.id} 
+                  className="transit-shipment clickable-logistics-card"
+                  onClick={() => onEditProduct && onEditProduct(p)}
+                >
                   {/* Left Info Panel */}
                   <div style={{ width: '180px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                     <span className="cell-sku">{p.sku}</span>
@@ -150,7 +154,11 @@ export default function LocationVisualizer({ products }) {
                     </div>
                   ) : (
                     items.map(item => (
-                      <div key={item.id} className="zone-item">
+                      <div 
+                        key={item.id} 
+                        className="zone-item clickable-logistics-card"
+                        onClick={() => onEditProduct && onEditProduct(item)}
+                      >
                         <div>
                           <div className="zone-item-sku">{item.sku}</div>
                           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>

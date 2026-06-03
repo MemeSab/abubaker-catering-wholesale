@@ -345,6 +345,7 @@ export default function App() {
           products={filteredProducts}
           nativeCurrency={nativeCurrency}
           exchangeRates={activeRates}
+          onEditProduct={handleEditProduct}
         />
 
         {/* WORKSPACE CONTENT: TAB + XE CURRENCY SIDEBAR */}
@@ -372,7 +373,7 @@ export default function App() {
                 setClientFilter={setClientFilter}
               />
             ) : (
-              <LocationVisualizer products={filteredProducts} />
+              <LocationVisualizer products={filteredProducts} onEditProduct={handleEditProduct} />
             )}
           </div>
 

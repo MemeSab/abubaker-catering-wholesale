@@ -471,7 +471,13 @@ export default function ProductTable({
                 const activeMargin = tablePricingTier === 'tier1' ? p.calcs.tier1MarginPct : tablePricingTier === 'tier2' ? p.calcs.tier2MarginPct : p.calcs.tier3MarginPct;
 
                 return (
-                  <tr key={p.id} className="animate-fade-in" style={{ background: selectedProductIds.includes(p.id) ? 'rgba(6, 182, 212, 0.04)' : '' }}>
+                  <tr 
+                    key={p.id} 
+                    className="animate-fade-in data-table-row" 
+                    style={{ background: selectedProductIds.includes(p.id) ? 'rgba(6, 182, 212, 0.04)' : '' }}
+                    onDoubleClick={() => onEdit && onEdit(p)}
+                    title="Double-click to edit item details"
+                  >
                     <td style={{ textAlign: 'center' }}>
                       <input 
                         type="checkbox" 
