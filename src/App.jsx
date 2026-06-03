@@ -202,6 +202,10 @@ export default function App() {
     setShowModal(false);
   };
 
+  const handleImportProducts = (importedList) => {
+    saveProducts([...products, ...importedList]);
+  };
+
   // Get active rates for calculations (combining live + custom overrides)
   const activeRates = {
     CNY: customRates.CNY || liveRates.rates.CNY || 9.15,
@@ -284,6 +288,7 @@ export default function App() {
                 onEdit={handleEditProduct}
                 onDelete={handleDeleteProduct}
                 onAddClick={handleAddProduct}
+                onImport={handleImportProducts}
               />
             ) : (
               <LocationVisualizer products={products} />

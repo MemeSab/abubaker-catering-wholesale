@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Plus, FileSpreadsheet, Trash2, Edit2, AlertCircle } from 'lucide-react';
+import { Search, Plus, FileSpreadsheet, Trash2, Edit2, AlertCircle, Upload, Download } from 'lucide-react';
 import { calculateLandedCost } from '../utils/costCalculator';
 
 export default function ProductTable({
@@ -8,7 +8,8 @@ export default function ProductTable({
   nativeCurrency,
   onEdit,
   onDelete,
-  onAddClick
+  onAddClick,
+  onImport
 }) {
   const [search, setSearch] = useState('');
   const [originFilter, setOriginFilter] = useState('All');
@@ -44,6 +45,101 @@ export default function ProductTable({
       setSortField(field);
       setSortAsc(true);
     }
+  };
+
+  const handleImportCsv = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const text = event.target.result;
+        const lines = text.split(/\r?\n/).filter(line => line.trim());
+        if (lines.length < 2) {
+          alert("CSV file is empty or missing header data.");
+          return;
+        }
+
+        // Parse headers: strip quotes
+        const headers = lines[0].split(',').map(h => h.trim().replace(/^["']|["']$/g, ''));
+        const importedProducts = [];
+
+        for (let i = 1; i < lines.length; i++) {
+          const line = lines[i];
+          
+          // Split by comma outside of double quotes
+          const values = [];
+          let currentVal = '';
+          let inQuotes = false;
+          
+          for (let c = 0; c < line.length; c++) {
+            const char = line[c];
+            if (char === '"') {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              values.push(currentVal);
+              currentVal = '';
+            } else {
+              currentVal += char;
+            }
+          }
+          values.push(currentVal);
+
+          const cleanedValues = values.map(val => val.trim().replace(/^["']|["']$/g, ''));
+
+          if (cleanedValues.length < 5) continue;
+
+          // Map CSV header keys to row object
+          const row = {};
+          headers.forEach((header, index) => {
+            row[header] = cleanedValues[index];
+          });
+
+          // Build product object
+          const productObj = {
+            id: 'prod_csv_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9),
+            sku: row.sku || `SKU-${i}`,
+            name: row.name || 'Unnamed Imported Item',
+            origin: row.origin || 'China',
+            status: row.status || 'Warehouse',
+            allocatedClient: row.allocatedClient || '',
+            warehouseZone: row.warehouseZone || 'Zone A',
+            warehouseAisle: parseInt(row.warehouseAisle) || 1,
+            warehouseShelf: row.warehouseShelf || 'A',
+            warehouseBin: parseInt(row.warehouseBin) || 1,
+            transitCarrier: row.transitCarrier || '',
+            transitVessel: row.transitVessel || '',
+            transitEta: row.transitEta || '',
+            foreignPrice: parseFloat(row.foreignPrice) || 0,
+            purchaseCurrency: row.purchaseCurrency || (row.origin === 'Turkey' ? 'TRY' : 'CNY'),
+            dutyRatePct: parseFloat(row.dutyRatePct) || (row.origin === 'Turkey' ? 4.0 : 6.5),
+            piecesPerCarton: parseInt(row.piecesPerCarton) || 1,
+            numCartons: parseInt(row.numCartons) || 0,
+            cartonLength: parseFloat(row.cartonLength) || 0,
+            cartonWidth: parseFloat(row.cartonWidth) || 0,
+            cartonHeight: parseFloat(row.cartonHeight) || 0,
+            grossWeightPerCarton: parseFloat(row.grossWeightPerCarton) || 0,
+            shippingCostPerCarton: parseFloat(row.shippingCostPerCarton) || 0,
+            localHandlingPerCarton: parseFloat(row.localHandlingPerCarton) || 0
+          };
+
+          importedProducts.push(productObj);
+        }
+
+        if (importedProducts.length > 0) {
+          onImport(importedProducts);
+          alert(`Successfully imported ${importedProducts.length} items!`);
+        } else {
+          alert("No valid items found to import.");
+        }
+      } catch (error) {
+        console.error("Error parsing CSV:", error);
+        alert("Error parsing CSV file. Please ensure it matches the template format.");
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = ''; // clear input so same file can be re-imported
   };
 
   // Extract unique client names
@@ -159,6 +255,8 @@ export default function ProductTable({
     return sortAsc ? ' ↑' : ' ↓';
   };
 
+  const templateUrl = `${import.meta.env.BASE_URL || '/'}dummy_inventory_import.csv`;
+
   return (
     <div className="glass-panel" style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
       
@@ -213,6 +311,24 @@ export default function ProductTable({
             <FileSpreadsheet size={16} />
             <span>Export CSV</span>
           </button>
+
+          {/* Import file input and buttons */}
+          <input
+            type="file"
+            accept=".csv"
+            id="csv-import"
+            style={{ display: 'none' }}
+            onChange={handleImportCsv}
+          />
+          <button className="btn btn-secondary" onClick={() => document.getElementById('csv-import').click()} title="Import inventory CSV">
+            <Upload size={16} />
+            <span>Import CSV</span>
+          </button>
+
+          <a href={templateUrl} download className="btn btn-text" style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }} title="Download sample import template">
+            <Download size={12} />
+            <span>Template</span>
+          </a>
 
           <button className="btn btn-primary" onClick={onAddClick}>
             <Plus size={16} />
