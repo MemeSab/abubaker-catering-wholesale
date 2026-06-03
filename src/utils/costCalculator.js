@@ -58,6 +58,12 @@ export function calculateLandedCost(product, exchangeRate) {
   const grossWeightPerCarton = parseFloat(product.grossWeightPerCarton) || 0;
   const totalWeight = grossWeightPerCarton * numCartons;
 
+  // Selling & Margin calculations
+  const sellingPrice = parseFloat(product.sellingPrice) || 0;
+  const profitPerPiece = sellingPrice > 0 ? sellingPrice - landedCostPerPiece : 0;
+  const marginPct = sellingPrice > 0 ? (profitPerPiece / sellingPrice) * 100 : 0;
+  const markupPct = landedCostPerPiece > 0 ? (profitPerPiece / landedCostPerPiece) * 100 : 0;
+
   return {
     nativePricePerPiece,
     dutyCostPerPiece,
@@ -74,6 +80,14 @@ export function calculateLandedCost(product, exchangeRate) {
     totalDutyCost: dutyCostPerPiece * totalPieces,
     totalShippingCost: shippingCostPerPiece * totalPieces,
     totalLocalHandling: localHandlingPerPiece * totalPieces,
-    totalLandedCost: landedCostPerPiece * totalPieces
+    totalLandedCost: landedCostPerPiece * totalPieces,
+
+    // Margin fields
+    sellingPrice,
+    profitPerPiece,
+    marginPct,
+    markupPct,
+    totalRevenue: sellingPrice * totalPieces,
+    totalProfit: profitPerPiece * totalPieces
   };
 }

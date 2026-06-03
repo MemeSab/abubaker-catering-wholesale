@@ -9,7 +9,8 @@ export default function ProductTable({
   onEdit,
   onDelete,
   onAddClick,
-  onImport
+  onImport,
+  onResetToSeed
 }) {
   const [search, setSearch] = useState('');
   const [originFilter, setOriginFilter] = useState('All');
@@ -121,7 +122,8 @@ export default function ProductTable({
             cartonHeight: parseFloat(row.cartonHeight) || 0,
             grossWeightPerCarton: parseFloat(row.grossWeightPerCarton) || 0,
             shippingCostPerCarton: parseFloat(row.shippingCostPerCarton) || 0,
-            localHandlingPerCarton: parseFloat(row.localHandlingPerCarton) || 0
+            localHandlingPerCarton: parseFloat(row.localHandlingPerCarton) || 0,
+            sellingPrice: parseFloat(row.sellingPrice) || 0
           };
 
           importedProducts.push(productObj);
@@ -190,6 +192,12 @@ export default function ProductTable({
     } else if (sortField === 'pieces') {
       valA = a.calcs.totalPieces;
       valB = b.calcs.totalPieces;
+    } else if (sortField === 'sellingPrice') {
+      valA = a.calcs.sellingPrice;
+      valB = b.calcs.sellingPrice;
+    } else if (sortField === 'margin') {
+      valA = a.calcs.marginPct;
+      valB = b.calcs.marginPct;
     }
 
     if (typeof valA === 'string') {
@@ -210,7 +218,7 @@ export default function ProductTable({
     const headers = [
       'SKU', 'Name', 'Origin', 'Status', 'Allocated Client', 'Location Details', 'Foreign Price', 
       'Currency', 'Duty Rate %', 'Cartons', 'Pieces/Carton', 'Total Pieces', 
-      'Gross Weight (kg)', 'Total Volume (CBM)', `Landed Cost (${nativeCurrency})`, `Total Value (${nativeCurrency})`
+      'Gross Weight (kg)', 'Total Volume (CBM)', `Landed Cost (${nativeCurrency})`, `Selling Price (${nativeCurrency})`, 'Profit Margin %', `Total Value (${nativeCurrency})`
     ];
 
     const rows = sortedProducts.map(p => {
@@ -234,6 +242,8 @@ export default function ProductTable({
         p.calcs.totalWeight.toFixed(2),
         p.calcs.totalCbm.toFixed(3),
         p.calcs.landedCostPerPiece.toFixed(2),
+        p.calcs.sellingPrice.toFixed(2),
+        p.calcs.marginPct.toFixed(1),
         p.calcs.totalLandedCost.toFixed(2)
       ];
     });
@@ -330,6 +340,12 @@ export default function ProductTable({
             <span>Template</span>
           </a>
 
+          {onResetToSeed && (
+            <button className="btn btn-text" onClick={onResetToSeed} style={{ fontSize: '0.75rem', padding: '0.4rem 0.6rem', color: 'rgba(244, 63, 94, 0.85)', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }} title="Reset database to default seed data">
+              <span>Reset Defaults</span>
+            </button>
+          )}
+
           <button className="btn btn-primary" onClick={onAddClick}>
             <Plus size={16} />
             <span>Add Item</span>
@@ -358,6 +374,8 @@ export default function ProductTable({
                 <th style={{ textAlign: 'right' }}>CBM</th>
                 <th style={{ textAlign: 'right' }}>Buying Price</th>
                 <th onClick={() => handleSort('landedCost')} style={{ cursor: 'pointer', textAlign: 'right' }}>Landed / Pc{getSortIndicator('landedCost')}</th>
+                <th onClick={() => handleSort('sellingPrice')} style={{ cursor: 'pointer', textAlign: 'right' }}>Selling Price{getSortIndicator('sellingPrice')}</th>
+                <th onClick={() => handleSort('margin')} style={{ cursor: 'pointer', textAlign: 'right' }}>Margin{getSortIndicator('margin')}</th>
                 <th onClick={() => handleSort('totalValue')} style={{ cursor: 'pointer', textAlign: 'right' }}>Landed Value{getSortIndicator('totalValue')}</th>
                 <th style={{ textAlign: 'center' }}>Actions</th>
               </tr>
@@ -405,6 +423,26 @@ export default function ProductTable({
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: '600' }} className="cell-landed">
                       {getSymbol(nativeCurrency)}{p.calcs.landedCostPerPiece.toFixed(2)}
+                    </td>
+                    <td style={{ textAlign: 'right', fontWeight: '600' }}>
+                      {p.calcs.sellingPrice > 0 
+                        ? `${getSymbol(nativeCurrency)}${p.calcs.sellingPrice.toFixed(2)}`
+                        : '—'}
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      {p.calcs.sellingPrice > 0 ? (
+                        <span className="badge" style={{ 
+                          background: p.calcs.marginPct >= 0 ? 'rgba(16, 185, 129, 0.15)' : 'rgba(244, 63, 94, 0.15)',
+                          color: p.calcs.marginPct >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)',
+                          border: p.calcs.marginPct >= 0 ? '1px solid rgba(16, 185, 129, 0.3)' : '1px solid rgba(244, 63, 94, 0.3)',
+                          fontSize: '0.75rem',
+                          padding: '0.15rem 0.5rem'
+                        }}>
+                          {p.calcs.marginPct.toFixed(1)}%
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>—</span>
+                      )}
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: '700', color: 'var(--text-primary)' }}>
                       {getSymbol(nativeCurrency)}{p.calcs.totalLandedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

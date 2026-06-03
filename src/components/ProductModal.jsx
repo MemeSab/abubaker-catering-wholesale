@@ -35,7 +35,8 @@ export default function ProductModal({
     transitCarrier: '',
     transitVessel: '',
     transitEta: '',
-    allocatedClient: ''
+    allocatedClient: '',
+    sellingPrice: ''
   });
 
   useEffect(() => {
@@ -60,7 +61,8 @@ export default function ProductModal({
         transitCarrier: product.transitCarrier || '',
         transitVessel: product.transitVessel || '',
         transitEta: product.transitEta || '',
-        allocatedClient: product.allocatedClient || ''
+        allocatedClient: product.allocatedClient || '',
+        sellingPrice: product.sellingPrice?.toString() || ''
       });
     }
   }, [product]);
@@ -112,7 +114,8 @@ export default function ProductModal({
       shippingCostPerCarton: parseFloat(formData.shippingCostPerCarton) || 0,
       localHandlingPerCarton: parseFloat(formData.localHandlingPerCarton) || 0,
       warehouseAisle: parseInt(formData.warehouseAisle) || 1,
-      warehouseBin: parseInt(formData.warehouseBin) || 1
+      warehouseBin: parseInt(formData.warehouseBin) || 1,
+      sellingPrice: parseFloat(formData.sellingPrice) || 0
     };
 
     onSave(processedProduct);
@@ -223,7 +226,7 @@ export default function ProductModal({
                     </div>
                   </div>
 
-                  <div className="form-grid-2" style={{ marginTop: '1rem' }}>
+                  <div className="form-grid-3" style={{ marginTop: '1rem' }}>
                     <div className="form-group">
                       <label className="form-label">Allocated Client / Buyer</label>
                       <input
@@ -244,6 +247,18 @@ export default function ProductModal({
                         className="form-control"
                         placeholder="e.g. 6.5"
                         value={formData.dutyRatePct}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Selling Price ({getSymbol(nativeCurrency)})</label>
+                      <input
+                        type="number"
+                        name="sellingPrice"
+                        step="0.01"
+                        className="form-control"
+                        placeholder="e.g. 15.00"
+                        value={formData.sellingPrice}
                         onChange={handleChange}
                       />
                     </div>
@@ -465,7 +480,27 @@ export default function ProductModal({
                       <span>Landed Cost (per piece):</span>
                       <span>{getSymbol(nativeCurrency)}{calculations.landedCostPerPiece.toFixed(2)}</span>
                     </div>
-                    <div className="cost-breakdown-row" style={{ fontStyle: 'italic', fontSize: '0.75rem', marginTop: '0.25rem' }}>
+                    {calculations.sellingPrice > 0 && (
+                      <>
+                        <div className="cost-breakdown-row" style={{ marginTop: '0.25rem' }}>
+                          <span>Customer Price (per piece):</span>
+                          <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{getSymbol(nativeCurrency)}{calculations.sellingPrice.toFixed(2)}</span>
+                        </div>
+                        <div className="cost-breakdown-row">
+                          <span>Profit per piece:</span>
+                          <span style={{ fontWeight: 700, color: calculations.profitPerPiece >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
+                            {getSymbol(nativeCurrency)}{calculations.profitPerPiece.toFixed(2)} ({calculations.marginPct.toFixed(1)}% Margin)
+                          </span>
+                        </div>
+                        <div className="cost-breakdown-row">
+                          <span>Projected Order Profit:</span>
+                          <span style={{ fontWeight: 700, color: calculations.totalProfit >= 0 ? 'var(--accent-emerald)' : 'var(--accent-rose)' }}>
+                            {getSymbol(nativeCurrency)}{calculations.totalProfit.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                    <div className="cost-breakdown-row" style={{ fontStyle: 'italic', fontSize: '0.75rem', marginTop: '0.25rem', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '0.25rem' }}>
                       <span>Total landed value of order:</span>
                       <span style={{ color: 'var(--text-primary)', fontWeight: '600' }}>
                         {getSymbol(nativeCurrency)}{calculations.totalLandedCost.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}

@@ -33,7 +33,8 @@ const SEED_PRODUCTS = [
     warehouseAisle: 3,
     warehouseShelf: 'C',
     warehouseBin: 14,
-    allocatedClient: 'AbuBaker Catering'
+    allocatedClient: 'AbuBaker Catering',
+    sellingPrice: 22.50
   },
   {
     id: 'prod_2',
@@ -56,7 +57,8 @@ const SEED_PRODUCTS = [
     warehouseAisle: 9,
     warehouseShelf: 'A',
     warehouseBin: 5,
-    allocatedClient: 'London Hospitality Group'
+    allocatedClient: 'London Hospitality Group',
+    sellingPrice: 18.00
   },
   {
     id: 'prod_3',
@@ -78,7 +80,8 @@ const SEED_PRODUCTS = [
     transitCarrier: 'Cosco Shipping',
     transitVessel: 'COSCO-AURA-9',
     transitEta: '2026-06-20',
-    allocatedClient: 'AbuBaker Catering'
+    allocatedClient: 'AbuBaker Catering',
+    sellingPrice: 9.50
   },
   {
     id: 'prod_4',
@@ -100,7 +103,8 @@ const SEED_PRODUCTS = [
     transitCarrier: 'Turkish Cargo',
     transitVessel: 'TK-FLIGHT-882',
     transitEta: '2026-06-08',
-    allocatedClient: ''
+    allocatedClient: '',
+    sellingPrice: 12.00
   }
 ];
 
@@ -206,6 +210,12 @@ export default function App() {
     saveProducts([...products, ...importedList]);
   };
 
+  const handleResetToSeed = () => {
+    if (window.confirm('Are you sure you want to reset all inventory to the default seed data? This will overwrite your current changes.')) {
+      saveProducts(SEED_PRODUCTS);
+    }
+  };
+
   // Get active rates for calculations (combining live + custom overrides)
   const activeRates = {
     CNY: customRates.CNY || liveRates.rates.CNY || 9.15,
@@ -289,6 +299,7 @@ export default function App() {
                 onDelete={handleDeleteProduct}
                 onAddClick={handleAddProduct}
                 onImport={handleImportProducts}
+                onResetToSeed={handleResetToSeed}
               />
             ) : (
               <LocationVisualizer products={products} />

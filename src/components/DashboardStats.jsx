@@ -37,6 +37,10 @@ export default function DashboardStats({
   const clientValuations = {};
   let totalAvailableValue = 0;
 
+  // Projected profit and revenue aggregates
+  let totalRevenue = 0;
+  let totalProfit = 0;
+
   products.forEach(p => {
     const rate = exchangeRates[p.purchaseCurrency] || 1;
     const piecesPerCarton = parseInt(p.piecesPerCarton) || 1;
@@ -70,6 +74,14 @@ export default function DashboardStats({
     const itemLandedCost = itemPurchaseCost + itemDutyCost + itemShippingCost + itemHandlingCost;
     totalLandedValue += itemLandedCost;
 
+    // Selling & profit calculations
+    const sellingPrice = parseFloat(p.sellingPrice) || 0;
+    const itemRevenue = sellingPrice * itemPieces;
+    totalRevenue += itemRevenue;
+
+    const itemProfit = itemRevenue > 0 ? itemRevenue - itemLandedCost : 0;
+    totalProfit += itemProfit;
+
     // Client allocations sum
     if (p.allocatedClient) {
       clientValuations[p.allocatedClient] = (clientValuations[p.allocatedClient] || 0) + itemLandedCost;
@@ -99,8 +111,7 @@ export default function DashboardStats({
   };
 
   // Calculate efficiency percentages
-  const productCostPct = totalLandedValue > 0 ? (totalPurchaseCost / totalLandedValue) * 100 : 0;
-  const landedOverheadPct = totalLandedValue > 0 ? ((totalShippingCost + totalHandlingCost + totalDutyCost) / totalLandedValue) * 100 : 0;
+  const avgProfitMarginPct = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -120,15 +131,15 @@ export default function DashboardStats({
           </div>
         </div>
 
-        {/* Landed Efficiency */}
+        {/* Projected Gross Profit */}
         <div className="stats-card glass-panel animate-fade-in" style={{ animationDelay: '0.05s' }}>
           <div className="stats-header">
-            <span>Landed Cost Efficiency</span>
-            <Percent size={18} className="text-cyan" />
+            <span>Projected Gross Profit</span>
+            <TrendingUp size={18} className="text-cyan" />
           </div>
-          <div className="stats-value">{productCostPct.toFixed(1)}%</div>
+          <div className="stats-value">{formatCurrency(totalProfit)}</div>
           <div className="stats-footer">
-            <span>Product: {productCostPct.toFixed(0)}% | Logistics: {landedOverheadPct.toFixed(0)}%</span>
+            <span>Avg Margin: <strong>{avgProfitMarginPct.toFixed(1)}%</strong> | Rev: {formatCurrency(totalRevenue)}</span>
           </div>
         </div>
 
