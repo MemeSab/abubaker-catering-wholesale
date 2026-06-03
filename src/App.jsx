@@ -117,6 +117,12 @@ export default function App() {
   const [isRefreshingRates, setIsRefreshingRates] = useState(false);
   const [modalProduct, setModalProduct] = useState(null); // null = closed, {} = add, productObj = edit
   const [showModal, setShowModal] = useState(false);
+  
+  // Filter States (Hoisted for dynamic Dashboard stats & LocationVisualizer)
+  const [search, setSearch] = useState('');
+  const [originFilter, setOriginFilter] = useState('All');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [clientFilter, setClientFilter] = useState('All');
 
   // 1. Initial State Load
   useEffect(() => {
@@ -225,6 +231,32 @@ export default function App() {
     GBP: liveRates.rates.GBP || 1.0,
   };
 
+  // Dynamically filter products list so stats card and map layout are reactive
+  const filteredProducts = products.filter(item => {
+    const sku = (item.sku || '').toString().toLowerCase();
+    const name = (item.name || '').toString().toLowerCase();
+    const carrier = (item.transitCarrier || '').toString().toLowerCase();
+    const zone = (item.warehouseZone || '').toString().toLowerCase();
+    const client = (item.allocatedClient || '').toString().toLowerCase();
+    const query = search.toLowerCase();
+
+    const matchesSearch = 
+      sku.includes(query) ||
+      name.includes(query) ||
+      carrier.includes(query) ||
+      zone.includes(query) ||
+      client.includes(query);
+
+    const matchesOrigin = originFilter === 'All' || item.origin === originFilter;
+    const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
+    const matchesClient = 
+      clientFilter === 'All' || 
+      (clientFilter === 'Unallocated' && !item.allocatedClient) ||
+      item.allocatedClient === clientFilter;
+
+    return matchesSearch && matchesOrigin && matchesStatus && matchesClient;
+  });
+
   return (
     <div className="app-container">
       
@@ -280,7 +312,7 @@ export default function App() {
         
         {/* TOP LEVEL: STATS OVERVIEW */}
         <DashboardStats 
-          products={products}
+          products={filteredProducts}
           nativeCurrency={nativeCurrency}
           exchangeRates={activeRates}
         />
@@ -300,9 +332,17 @@ export default function App() {
                 onAddClick={handleAddProduct}
                 onImport={handleImportProducts}
                 onResetToSeed={handleResetToSeed}
+                search={search}
+                setSearch={setSearch}
+                originFilter={originFilter}
+                setOriginFilter={setOriginFilter}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                clientFilter={clientFilter}
+                setClientFilter={setClientFilter}
               />
             ) : (
-              <LocationVisualizer products={products} />
+              <LocationVisualizer products={filteredProducts} />
             )}
           </div>
 

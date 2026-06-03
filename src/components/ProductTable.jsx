@@ -10,12 +10,16 @@ export default function ProductTable({
   onDelete,
   onAddClick,
   onImport,
-  onResetToSeed
+  onResetToSeed,
+  search,
+  setSearch,
+  originFilter,
+  setOriginFilter,
+  statusFilter,
+  setStatusFilter,
+  clientFilter,
+  setClientFilter
 }) {
-  const [search, setSearch] = useState('');
-  const [originFilter, setOriginFilter] = useState('All');
-  const [statusFilter, setStatusFilter] = useState('All');
-  const [clientFilter, setClientFilter] = useState('All');
   const [sortField, setSortField] = useState('sku');
   const [sortAsc, setSortAsc] = useState(true);
 
