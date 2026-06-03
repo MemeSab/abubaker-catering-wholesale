@@ -33,6 +33,10 @@ export default function DashboardStats({
   let transitCount = 0;
   let warehouseCount = 0;
 
+  // Client allocations tracking
+  const clientValuations = {};
+  let totalAvailableValue = 0;
+
   products.forEach(p => {
     const rate = exchangeRates[p.purchaseCurrency] || 1;
     const piecesPerCarton = parseInt(p.piecesPerCarton) || 1;
@@ -63,7 +67,15 @@ export default function DashboardStats({
     totalHandlingCost += itemHandlingCost;
 
     // Total Landed for this item
-    totalLandedValue += itemPurchaseCost + itemDutyCost + itemShippingCost + itemHandlingCost;
+    const itemLandedCost = itemPurchaseCost + itemDutyCost + itemShippingCost + itemHandlingCost;
+    totalLandedValue += itemLandedCost;
+
+    // Client allocations sum
+    if (p.allocatedClient) {
+      clientValuations[p.allocatedClient] = (clientValuations[p.allocatedClient] || 0) + itemLandedCost;
+    } else {
+      totalAvailableValue += itemLandedCost;
+    }
 
     // Weight and CBM
     const cartonWidth = parseFloat(p.cartonWidth) || 0;
@@ -184,6 +196,39 @@ export default function DashboardStats({
           </div>
           <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.03)', borderRadius: '3px', overflow: 'hidden' }}>
             <div style={{ width: `${totalPieces > 0 ? (turkeyCount / totalPieces) * 100 : 0}%`, height: '100%', background: 'var(--accent-indigo)' }}></div>
+          </div>
+        </div>
+
+        {/* Client Allocations Card */}
+        <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--border-light)', paddingBottom: '0.5rem' }}>
+            <span style={{ fontWeight: '700', fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--text-secondary)' }}>Client Valuation Portfolio</span>
+            <span className="badge" style={{ background: 'rgba(6, 182, 212, 0.1)', color: 'var(--accent-cyan)', fontSize: '0.65rem' }}>Allocations</span>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '100px', overflowY: 'auto' }}>
+            {Object.keys(clientValuations).length === 0 ? (
+              <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>No client allocations logged yet.</span>
+            ) : (
+              Object.entries(clientValuations).map(([clientName, val]) => (
+                <div key={clientName} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem' }}>
+                  <span style={{ fontWeight: '600', color: 'var(--text-primary)', maxWidth: '140px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={clientName}>
+                    {clientName}
+                  </span>
+                  <div style={{ textAlign: 'right', display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-muted)', fontSize: '0.7rem' }}>
+                      ({((val / (totalLandedValue || 1)) * 100).toFixed(0)}%)
+                    </span>
+                    <strong style={{ color: 'var(--accent-emerald)', fontFamily: 'monospace' }}>{formatCurrency(val)}</strong>
+                  </div>
+                </div>
+              ))
+            )}
+
+            <div style={{ borderTop: '1px dashed var(--border-light)', paddingTop: '0.5rem', marginTop: '0.25rem', display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem' }}>
+              <span style={{ color: 'var(--text-muted)' }}>Unallocated Stock:</span>
+              <strong style={{ color: 'var(--text-primary)', fontFamily: 'monospace' }}>{formatCurrency(totalAvailableValue)}</strong>
+            </div>
           </div>
         </div>
 

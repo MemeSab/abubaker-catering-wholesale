@@ -13,6 +13,7 @@ export default function ProductTable({
   const [search, setSearch] = useState('');
   const [originFilter, setOriginFilter] = useState('All');
   const [statusFilter, setStatusFilter] = useState('All');
+  const [clientFilter, setClientFilter] = useState('All');
   const [sortField, setSortField] = useState('sku');
   const [sortAsc, setSortAsc] = useState(true);
 
@@ -45,18 +46,37 @@ export default function ProductTable({
     }
   };
 
+  // Extract unique client names
+  const uniqueClients = Array.from(
+    new Set(products.map(p => p.allocatedClient).filter(Boolean))
+  );
+
   const filteredProducts = processedProducts.filter(item => {
+    const sku = (item.sku || '').toString().toLowerCase();
+    const name = (item.name || '').toString().toLowerCase();
+    const carrier = (item.transitCarrier || '').toString().toLowerCase();
+    const zone = (item.warehouseZone || '').toString().toLowerCase();
+    const client = (item.allocatedClient || '').toString().toLowerCase();
+    const query = search.toLowerCase();
+
+    // Robust case-insensitive check
     const matchesSearch = 
-      item.sku.toLowerCase().includes(search.toLowerCase()) ||
-      item.name.toLowerCase().includes(search.toLowerCase()) ||
-      (item.transitCarrier && item.transitCarrier.toLowerCase().includes(search.toLowerCase())) ||
-      (item.warehouseZone && item.warehouseZone.toLowerCase().includes(search.toLowerCase()));
+      sku.includes(query) ||
+      name.includes(query) ||
+      carrier.includes(query) ||
+      zone.includes(query) ||
+      client.includes(query);
 
     const matchesOrigin = originFilter === 'All' || item.origin === originFilter;
     
     const matchesStatus = statusFilter === 'All' || item.status === statusFilter;
 
-    return matchesSearch && matchesOrigin && matchesStatus;
+    const matchesClient = 
+      clientFilter === 'All' || 
+      (clientFilter === 'Unallocated' && !item.allocatedClient) ||
+      item.allocatedClient === clientFilter;
+
+    return matchesSearch && matchesOrigin && matchesStatus && matchesClient;
   });
 
   // Sorting logic
@@ -92,7 +112,7 @@ export default function ProductTable({
     if (sortedProducts.length === 0) return;
 
     const headers = [
-      'SKU', 'Name', 'Origin', 'Status', 'Location Details', 'Foreign Price', 
+      'SKU', 'Name', 'Origin', 'Status', 'Allocated Client', 'Location Details', 'Foreign Price', 
       'Currency', 'Duty Rate %', 'Cartons', 'Pieces/Carton', 'Total Pieces', 
       'Gross Weight (kg)', 'Total Volume (CBM)', `Landed Cost (${nativeCurrency})`, `Total Value (${nativeCurrency})`
     ];
@@ -107,6 +127,7 @@ export default function ProductTable({
         `"${p.name.replace(/"/g, '""')}"`,
         p.origin,
         p.status,
+        `"${(p.allocatedClient || 'Available').replace(/"/g, '""')}"`,
         `"${locationDetail}"`,
         p.foreignPrice,
         p.purchaseCurrency,
@@ -148,7 +169,7 @@ export default function ProductTable({
           <input
             type="text"
             className="search-input"
-            placeholder="Search products by SKU, name, carrier..."
+            placeholder="Search SKU, name, client, carrier..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -177,6 +198,17 @@ export default function ProductTable({
             <option value="Transit">In Transit</option>
           </select>
 
+          {/* Client filter */}
+          <select
+            className="select-filter"
+            value={clientFilter}
+            onChange={(e) => setClientFilter(e.target.value)}
+          >
+            <option value="All">All Clients</option>
+            <option value="Unallocated">Unallocated (Available)</option>
+            {uniqueClients.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+
           <button className="btn btn-secondary" onClick={exportToCsv} disabled={sortedProducts.length === 0} title="Export CSV Report">
             <FileSpreadsheet size={16} />
             <span>Export CSV</span>
@@ -203,6 +235,7 @@ export default function ProductTable({
                 <th onClick={() => handleSort('sku')} style={{ cursor: 'pointer' }}>SKU{getSortIndicator('sku')}</th>
                 <th onClick={() => handleSort('name')} style={{ cursor: 'pointer' }}>Product Name{getSortIndicator('name')}</th>
                 <th onClick={() => handleSort('origin')} style={{ cursor: 'pointer' }}>Origin{getSortIndicator('origin')}</th>
+                <th onClick={() => handleSort('allocatedClient')} style={{ cursor: 'pointer' }}>Client Allocation{getSortIndicator('allocatedClient')}</th>
                 <th>Location Details</th>
                 <th onClick={() => handleSort('pieces')} style={{ cursor: 'pointer', textAlign: 'right' }}>Total Pcs{getSortIndicator('pieces')}</th>
                 <th style={{ textAlign: 'right' }}>Gross Wt (kg)</th>
@@ -229,6 +262,17 @@ export default function ProductTable({
                       <span className={`badge badge-${p.origin.toLowerCase()}`}>
                         {p.origin}
                       </span>
+                    </td>
+                    <td>
+                      {p.allocatedClient ? (
+                        <span className="badge" style={{ background: 'rgba(99, 102, 241, 0.1)', color: 'var(--accent-indigo)', border: '1px solid rgba(99, 102, 241, 0.2)' }}>
+                          {p.allocatedClient}
+                        </span>
+                      ) : (
+                        <span style={{ color: 'var(--text-muted)', fontSize: '0.85rem', fontStyle: 'italic' }}>
+                          Available
+                        </span>
+                      )}
                     </td>
                     <td>
                       <span className={`badge badge-${p.status === 'Warehouse' ? 'warehouse' : 'transit'}`}>

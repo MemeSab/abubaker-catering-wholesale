@@ -32,7 +32,8 @@ const SEED_PRODUCTS = [
     warehouseZone: 'Zone A',
     warehouseAisle: 3,
     warehouseShelf: 'C',
-    warehouseBin: 14
+    warehouseBin: 14,
+    allocatedClient: 'AbuBaker Catering'
   },
   {
     id: 'prod_2',
@@ -54,7 +55,8 @@ const SEED_PRODUCTS = [
     warehouseZone: 'Zone B',
     warehouseAisle: 9,
     warehouseShelf: 'A',
-    warehouseBin: 5
+    warehouseBin: 5,
+    allocatedClient: 'London Hospitality Group'
   },
   {
     id: 'prod_3',
@@ -75,7 +77,8 @@ const SEED_PRODUCTS = [
     status: 'Transit',
     transitCarrier: 'Cosco Shipping',
     transitVessel: 'COSCO-AURA-9',
-    transitEta: '2026-06-20'
+    transitEta: '2026-06-20',
+    allocatedClient: 'AbuBaker Catering'
   },
   {
     id: 'prod_4',
@@ -96,7 +99,8 @@ const SEED_PRODUCTS = [
     status: 'Transit',
     transitCarrier: 'Turkish Cargo',
     transitVessel: 'TK-FLIGHT-882',
-    transitEta: '2026-06-08'
+    transitEta: '2026-06-08',
+    allocatedClient: ''
   }
 ];
 

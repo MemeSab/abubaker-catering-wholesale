@@ -34,7 +34,8 @@ export default function ProductModal({
     // Transit details
     transitCarrier: '',
     transitVessel: '',
-    transitEta: ''
+    transitEta: '',
+    allocatedClient: ''
   });
 
   useEffect(() => {
@@ -58,7 +59,8 @@ export default function ProductModal({
         warehouseBin: product.warehouseBin?.toString() || '1',
         transitCarrier: product.transitCarrier || '',
         transitVessel: product.transitVessel || '',
-        transitEta: product.transitEta || ''
+        transitEta: product.transitEta || '',
+        allocatedClient: product.allocatedClient || ''
       });
     }
   }, [product]);
@@ -220,6 +222,32 @@ export default function ProductModal({
                       />
                     </div>
                   </div>
+
+                  <div className="form-grid-2" style={{ marginTop: '1rem' }}>
+                    <div className="form-group">
+                      <label className="form-label">Allocated Client / Buyer</label>
+                      <input
+                        type="text"
+                        name="allocatedClient"
+                        className="form-control"
+                        placeholder="e.g. AbuBaker Catering (Leave blank if available)"
+                        value={formData.allocatedClient}
+                        onChange={handleChange}
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label className="form-label">Customs Duty Rate %</label>
+                      <input
+                        type="number"
+                        name="dutyRatePct"
+                        step="0.1"
+                        className="form-control"
+                        placeholder="e.g. 6.5"
+                        value={formData.dutyRatePct}
+                        onChange={handleChange}
+                      />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Section: Packaging, Volume & Weights */}
@@ -308,19 +336,7 @@ export default function ProductModal({
                     <Calculator size={16} />
                     <span>Landed Cost Apportionment (Native Currency)</span>
                   </div>
-                  <div className="form-grid form-grid-3" style={{ marginTop: '0.75rem' }}>
-                    <div className="form-group">
-                      <label className="form-label">Duty Rate %</label>
-                      <input
-                        type="number"
-                        name="dutyRatePct"
-                        step="0.1"
-                        placeholder="6.5"
-                        className="form-control"
-                        value={formData.dutyRatePct}
-                        onChange={handleChange}
-                      />
-                    </div>
+                  <div className="form-grid-2" style={{ marginTop: '0.75rem' }}>
                     <div className="form-group">
                       <label className="form-label">Freight / Carton ({getSymbol(nativeCurrency)})</label>
                       <input
