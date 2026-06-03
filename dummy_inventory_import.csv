@@ -1,0 +1,21 @@
+sku,name,origin,status,allocatedClient,warehouseZone,warehouseAisle,warehouseShelf,warehouseBin,transitCarrier,transitVessel,transitEta,foreignPrice,purchaseCurrency,dutyRatePct,piecesPerCarton,numCartons,cartonLength,cartonWidth,cartonHeight,grossWeightPerCarton,shippingCostPerCarton,localHandlingPerCarton
+CHN-CUP-12O,12oz Ripple Kraft Hot Cups,China,Warehouse,Corner Cafe,Zone A,2,B,14,,,110.00,CNY,6.5,500,10,60,40,50,15.5,45.00,5.00
+TRK-CER-PLT,Aegean Blue 10-inch Ceramic Plates,Turkey,Warehouse,Grand Hotel,Zone B,5,A,2,,,280.00,TRY,4.0,24,20,50,50,30,19.0,35.00,4.00
+CHN-BOX-PIZ,12-inch Heavy Duty Pizza Boxes,China,Warehouse,Metro Pizza,Zone A,4,C,10,,,95.00,CNY,6.5,100,50,45,45,40,16.0,40.00,4.50
+TRK-POT-CLY,Traditional Turkish Clay Baking Pots,Turkey,Warehouse,Istanbul Diner,Zone B,12,D,3,,,320.00,TRY,4.0,10,15,60,40,40,14.2,30.00,3.50
+CHN-BAG-KRF,Brown Kraft Medium Takeaway Bags,China,Warehouse,Burger Bistro,Zone C,1,A,25,,,140.00,CNY,6.5,250,30,55,40,45,18.5,48.00,5.50
+CHN-NAP-WHT,2-Ply White Cocktail Napkins,China,Warehouse,Corner Cafe,Zone A,2,B,15,,,48.00,CNY,6.5,2000,15,50,35,40,12.0,30.00,3.00
+CHN-CHF-DIS,Stainless Steel Chafing Dish Set,China,Warehouse,Royal Catering,Zone C,8,B,9,,,420.00,CNY,6.5,4,25,75,45,55,24.0,60.00,7.00
+TRK-SKW-BMB,Natural Bamboo Skewers 25cm,Turkey,Warehouse,Istanbul Diner,Zone B,12,D,4,,,35.00,TRY,4.0,1000,8,40,30,30,8.5,20.00,2.00
+CHN-FOL-ALU,Premium Catering Aluminum Foil 45cm,China,Warehouse,Saffron Buffet,Zone C,3,C,12,,,180.00,CNY,6.5,6,40,50,40,40,21.0,45.00,5.00
+CHN-GSS-TUM,Elite Catering Glass Tumblers 350ml,China,Warehouse,Elite Events,Zone D,2,E,8,,,250.00,CNY,6.5,48,12,50,45,35,17.0,42.00,4.50
+TRK-LIN-TAB,Luxury White Linen Tablecloths,Turkey,Warehouse,Elite Events,Zone D,2,E,9,,,450.00,TRY,4.0,15,10,60,40,35,13.5,35.00,4.00
+CHN-CUT-STE,Heavy Stainless Steel Dinner Forks,China,Warehouse,Royal Catering,Zone C,8,B,10,,,150.00,CNY,6.5,120,20,40,30,25,15.0,25.00,3.00
+CHN-CUP-PLS,Clear Recyclable PET Tumblers 12oz,China,Warehouse,Oasis Lounge,Zone D,5,F,14,,,75.00,CNY,6.5,1000,18,60,40,40,16.5,45.00,5.00
+CHN-STR-PAP,Black Biodegradable Paper Straws,China,Warehouse,Oasis Lounge,Zone D,5,F,15,,,55.00,CNY,6.5,5000,6,45,30,35,9.0,25.00,2.50
+CHN-SGR-SAC,White Cane Sugar Sachets,China,Warehouse,City Cafe,Zone A,7,A,18,,,65.00,CNY,6.5,1000,12,35,30,30,11.0,20.00,2.00
+TRK-SOU-OWL,Hand-painted Ceramic Soup Bowls,Turkey,Warehouse,Grand Hotel,Zone B,5,A,3,,,190.00,TRY,4.0,36,25,45,45,40,20.5,38.00,4.00
+CHN-BOX-TKA,Biodegradable Sugarcane Clamshells,China,Transit,,,Maersk Line,MAERSK-EMERALD,2026-06-25,125.00,CNY,6.5,200,50,60,45,50,22.0,50.00,6.00
+TRK-COT-APN,Heavy Duty Cotton Chef Aprons,Turkey,Transit,,,Turkish Cargo,TK-FLIGHT-904,2026-06-18,220.00,TRY,4.0,50,15,55,40,40,14.0,30.00,3.50
+CHN-CON-ALU,Aluminum Takeaway Food Containers,China,Warehouse,,Zone A,10,F,2,,,135.00,CNY,6.5,500,20,55,40,45,17.5,45.00,5.00
+TRK-GLS-JAR,Hexagonal Glass Honey Jars 250ml,Turkey,Warehouse,,Zone B,8,C,22,,,90.00,TRY,4.0,48,35,45,35,30,15.0,28.00,3.00
