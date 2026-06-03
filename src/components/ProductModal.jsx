@@ -370,7 +370,7 @@ export default function ProductModal({
                     </div>
 
                     {formData.status === 'Warehouse' ? (
-                      <div className="form-grid form-grid-4" style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '0.5rem' }}>
+                      <div className="form-grid-4">
                         <div className="form-group">
                           <label className="form-label">Zone</label>
                           <select name="warehouseZone" className="select-filter" value={formData.warehouseZone} onChange={handleChange} style={{ height: '38px', padding: '0.5rem' }}>
@@ -393,7 +393,7 @@ export default function ProductModal({
                         </div>
                       </div>
                     ) : (
-                      <div className="form-grid form-grid-3" style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem' }}>
+                      <div className="form-grid-3">
                         <div className="form-group">
                           <label className="form-label">Carrier</label>
                           <input type="text" name="transitCarrier" className="form-control" placeholder="e.g. Maersk" value={formData.transitCarrier} onChange={handleChange} />

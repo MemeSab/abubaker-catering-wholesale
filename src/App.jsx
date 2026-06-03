@@ -271,7 +271,7 @@ export default function App() {
         <div className="section-split">
           
           {/* Main workspace */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', minWidth: 0 }}>
             {activeTab === 'ledger' ? (
               <ProductTable
                 products={products}

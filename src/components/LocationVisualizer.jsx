@@ -76,22 +76,22 @@ export default function LocationVisualizer({ products }) {
                   {/* Middle Timeline Map */}
                   <div className="transit-route">
                     {/* Origin node */}
-                    <div className={`route-node origin ${progress >= 0 ? 'active' : ''}`}>
+                    <div className={`route-node origin node-0 ${progress >= 0 ? 'active' : ''}`}>
                       <div className="route-node-label">{p.origin} Port</div>
                     </div>
 
                     {/* Middle sea transit node */}
-                    <div className={`route-node ${progress >= 35 ? 'active' : ''}`} style={{ left: '35%' }}>
+                    <div className={`route-node node-1 ${progress >= 35 ? 'active' : ''}`}>
                       <div className="route-node-label">International Waters</div>
                     </div>
 
                     {/* Customs port node */}
-                    <div className={`route-node ${progress >= 70 ? 'active' : ''}`} style={{ left: '70%' }}>
+                    <div className={`route-node node-2 ${progress >= 70 ? 'active' : ''}`}>
                       <div className="route-node-label">Customs / Port</div>
                     </div>
 
                     {/* Destination node */}
-                    <div className={`route-node destination ${progress >= 90 ? 'active' : ''}`}>
+                    <div className={`route-node destination node-3 ${progress >= 90 ? 'active' : ''}`}>
                       <div className="route-node-label">Local Warehouse</div>
                     </div>
                   </div>
